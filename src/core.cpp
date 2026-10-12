@@ -56,9 +56,21 @@ void stage1(){
   /*
   Cosa fa:
   1) Viene generato il numero casuale
-  2) Viene fatto 
+  2) Viene fatto il check dei bottoni
   */
-  resetInput(); // viene resettato lo score e il tempo dal last click dei bottoni
+  stage1_restart:
+  resetInput(); 
+  /*
+  Se uno dei due bottoni viene premuto prima che possa partire 
+  il gioco, allora viene dato errore per quel player, 
+  decrementato il suo score e ripartito stage 1
+  */
+  for(uint8_t i = 0; i < NUM_BUTTONS; i++) {
+    if (isButtonPressed(i)) {
+      signPlayerErrorScore(i);
+      goto stage1_restart;
+    }
+  }
   if (isJustEnteredInState()){
     Serial.println("Stage1...");
     resetInput();
@@ -72,12 +84,8 @@ void stage1(){
   if(getCurrentTimeInState() > MAX_TIME_IN_STAGE1_STATE) {
     changeState(FINAL_STATE);
   }
-  lcd.setCursor(0,1);
-  lcd.print("P1: " + String(getbuttonScore(0)) + " P2: " + String(getbuttonScore(1)));
-  /* change the state if button 0 is pressed */
-  if(isButtonPressed(0) or isButtonPressed(1)) {
-    changeState(STAGE2_STATE);
-  }
+  
+  changeState(STAGE2_STATE);
 }
 
 void stage2(){
@@ -96,6 +104,7 @@ void stage2(){
   if (getbuttonScore(p) == curr_random) {
     incPlayerScore(p);
   } 
+
   p = !p;
   if (getbuttonScore(p) > curr_random) {
     signPlayerErrorScore(p);
