@@ -53,20 +53,37 @@ void initInput(){
 }
 
 void signPlayerErrorScore(const int i) {
-  const int p = i == 0 ? LED_RED01 : LED_RED02;
   playerScore[i]--;
-  blink(p);
 }
 
-void blink(const int p) {
-  digitalWrite(p, HIGH);
-  delay(2000);
-  digitalWrite(p, LOW);
-}
 void incPlayerScore(const int i) {
-  const int p = i == 0 ? LED_GREEN01 : LED_GREEN02;
   playerScore[i]++;
-  blink(p);
+}
+
+void calcBlink(const bool p1, const bool p2) {
+  /*
+  Se p1 è true allora sceglierò di accendere il led green 
+  di player1, altrimenti rosso, idem per p2. 
+  Funzione utile nel momento in cui, alla fine dello stage2
+  si vorrà segnalare con un blink per ciascun player se
+  esso ha fatto un errore oppure ha vinto il round.
+  */
+  const bool pin_p1 = p1 ? LED_GREEN01 : LED_RED01;
+  const bool pin_p2 = p2 ? LED_GREEN02 : LED_RED02;
+  // blink totale di 2 secondi
+  const int del_tot = 2000; 
+  const int del_it = 300;
+  const int it = del_tot / 2*del_it;
+
+  for (uint8_t i = 0; i < it; i++) {
+    digitalWrite(pin_p1, HIGH);
+    digitalWrite(pin_p2, HIGH);
+    delay(del_it);
+    digitalWrite(pin_p1, LOW);
+    digitalWrite(pin_p2, LOW);
+    delay(del_it);
+  }
+
 }
 
 void resetInput(){

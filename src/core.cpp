@@ -12,6 +12,7 @@
 LiquidCrystal_I2C lcd = LiquidCrystal_I2C(LCD_ADDRESS, LCD_ROWS, LCD_COL);
 String welcome = "Welcome to the React! Game. Press Buttons to Start";
 int curr_random;
+uint8_t current_round = 1;
 /* core business logic */
 
 void initCore(){
@@ -59,7 +60,6 @@ void stage1(){
   2) Viene fatto il check dei bottoni
   */
   stage1_restart:
-  resetInput(); 
   /*
   Se uno dei due bottoni viene premuto prima che possa partire 
   il gioco, allora viene dato errore per quel player, 
@@ -68,6 +68,7 @@ void stage1(){
   for(uint8_t i = 0; i < NUM_BUTTONS; i++) {
     if (isButtonPressed(i)) {
       signPlayerErrorScore(i);
+      resetInput();
       goto stage1_restart;
     }
   }
@@ -81,40 +82,63 @@ void stage1(){
   }
   updateStateTime();
 
-  if(getCurrentTimeInState() > MAX_TIME_IN_STAGE1_STATE) {
+  if(getCurrentTimeInState() > MAX_TIME_IN_STAGE1_STATE / current_round) {
     changeState(FINAL_STATE);
   }
-  
+  while(!isButtonPressed(0) or !isButtonPressed(1));
   changeState(STAGE2_STATE);
 }
 
 void stage2(){
   const long ts = millis();
   uint8_t p = 0;
+  bool p_correct[NUM_BUTTONS] = {true, true};
+
   if (isJustEnteredInState()){
     Serial.println("Stage2...");
   }
   
+  /* Se viene superato questo controllo, 
+  vuol dire che hanno smesso di premere */
   if (ts - getLastButtonTime(0) < MAX_TIME_WAIT_BUTTON or 
     ts - getLastButtonTime(1) < MAX_TIME_WAIT_BUTTON) {
       return;
   }
-  /* Se viene superato questo controllo, vuol dire che hanno smesso di premere */
+
+  /*
+  Per trovare quale bottone ha finito per primo
+  e incrementare il suo score in caso abbia successo
+  */
   p = getLastButtonTime(0) > getLastButtonTime(1);
   if (getbuttonScore(p) == curr_random) {
     incPlayerScore(p);
   } 
 
-  p = !p;
-  if (getbuttonScore(p) > curr_random) {
-    signPlayerErrorScore(p);
+  /*
+  Per coloro che hanno sbagliato, viene segnalato
+  errore e decrementato lo score
+  */
+  for(uint8_t i = 0; i<NUM_BUTTONS; i++) {
+   if (isButtonPressed(i) != curr_random) {
+    signPlayerErrorScore(i);
+    p_correct[i] = false;
+  }
   }
 
+  lcd.clear();
+  lcd.setCursor(0, 1);
+  lcd.print("P1" + String(getbuttonScore(0)));
+  lcd.setCursor(10, 1);
+  lcd.print("P2" + String(getbuttonScore(1)));
+  calcBlink(p_correct[0], p_correct[1]);
   /* change the state if button 1 is pressed or max time elapsed*/
-  if (isButtonPressed(1) || getCurrentTimeInState() > MAX_TIME_IN_STAGE2_STATE){
+  if (isButtonPressed(1) || getCurrentTimeInState() > MAX_TIME_IN_STAGE2_STATE / current_round){
     changeState(FINAL_STATE);          
   }
+  current_round++;
+  changeState(STAGE1_STATE);
 }
+
 
 void finalize(){
   if (isJustEnteredInState()){

@@ -13,4 +13,5 @@ bool isButtonPressed(int buttonIndex);
 long getLastButtonTime(const int i);
 void incPlayerScore(const int i);
 void signPlayerErrorScore(const int i);
+void calcBlink(const bool p1, const bool p2);
 #endif
