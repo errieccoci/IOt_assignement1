@@ -2,14 +2,13 @@
 #include "Arduino.h"
 #include "kernel.h"
 #include "input.h"
-#include <LiquidCrystal_I2C.h>
+#include "output.h"
 
 #define MAX_TIME_IN_INTRO_STATE 5000
 #define MAX_TIME_IN_STAGE2_STATE 10000
 #define MAX_TIME_WAIT_BUTTON 3000
 #define MAX_TIME_IN_STAGE1_STATE 3000
 
-LiquidCrystal_I2C lcd = LiquidCrystal_I2C(LCD_ADDRESS, LCD_ROWS, LCD_COL);
 String welcome = "Welcome to the React! Game. Press Buttons to Start";
 int curr_random;
 uint8_t current_round = 1;
@@ -17,16 +16,6 @@ uint8_t current_round = 1;
 
 void initCore(){
   Serial.begin(9600);
-}
-
-void scroll(int *puntatore, bool *b, String string){
-    digitalWrite(LED_RED01, *b ? LOW : HIGH);
-    digitalWrite(LED_RED02, *b ? HIGH : LOW);
-    *b = !*b;
-    lcd.clear();
-    lcd.setCursor(0,0);
-    lcd.print(welcome.substring(*puntatore%string.length(), LCD_ROWS + *puntatore%string.length()).c_str());
-    (*puntatore)++;
 }
 
 void intro(){
@@ -38,8 +27,7 @@ void intro(){
   if (dt > MAX_TIME_IN_INTRO_STATE){
     changeState(STAGE1_STATE);
   }
-  lcd.init();
-  lcd.backlight();
+  initLcd();
   digitalWrite(LED_GREEN01, LOW);
   digitalWrite(LED_GREEN02, LOW);
   int c = 0;
@@ -49,7 +37,7 @@ void intro(){
     scroll(&c, &b, welcome);
     delay(300);
   }
-  lcd.clear();
+  resetLcd();
   changeState(STAGE1_STATE);
 }
 
@@ -79,9 +67,8 @@ void stage1(){
     Serial.println("Stage1...");
     resetInput();
     curr_random = (int)random(0, 3);
-    lcd.clear();
-    lcd.setCursor(0,0);
-    lcd.print(curr_random);
+    resetLcd();
+    printLcd(curr_random);
   }
   updateStateTime();
 
@@ -127,12 +114,8 @@ void stage2(){
     p_correct[i] = false;
   }
   }
-
-  lcd.clear();
-  lcd.setCursor(0, 1);
-  lcd.print("P1" + String(getbuttonScore(0)));
-  lcd.setCursor(10, 1);
-  lcd.print("P2" + String(getbuttonScore(1)));
+  printLcd("P1" + String(getbuttonScore(0)), 
+  "P2" + String(getbuttonScore(1)));
   calcBlink(p_correct[0], p_correct[1]);
   /* change the state if button 1 is pressed or max time elapsed*/
   updateStateTime();
@@ -151,8 +134,6 @@ void finalize(){
     int c = 0;
     bool b = true;
     Serial.println("Finalize...");
-    lcd.clear();
-    lcd.setCursor(0,0);
     if (getbuttonScore(0) == getbuttonScore(1)) {
       final_string = "Game over - Tie.";
     } else {

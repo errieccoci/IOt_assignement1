@@ -5,9 +5,7 @@
 #define STAGE1_STATE  2
 #define STAGE2_STATE  3
 #define FINAL_STATE   4 
-#define LCD_ADDRESS 0x27 // corrisponde al pin A4
-#define LCD_ROWS 20
-#define LCD_COL 4
+
 /* core business logic  */
 
 
