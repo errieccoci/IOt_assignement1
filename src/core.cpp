@@ -65,13 +65,16 @@ void stage1(){
   il gioco, allora viene dato errore per quel player, 
   decrementato il suo score e ripartito stage 1
   */
+  bool restart = false;
   for(uint8_t i = 0; i < NUM_BUTTONS; i++) {
     if (isButtonPressed(i)) {
       signPlayerErrorScore(i);
       resetInput();
-      goto stage1_restart;
+      Serial.println("STAGE1 button is pressed" + String(i));
+      restart = true;
     }
   }
+  if (restart) goto stage1_restart;
   if (isJustEnteredInState()){
     Serial.println("Stage1...");
     resetInput();
@@ -132,7 +135,8 @@ void stage2(){
   lcd.print("P2" + String(getbuttonScore(1)));
   calcBlink(p_correct[0], p_correct[1]);
   /* change the state if button 1 is pressed or max time elapsed*/
-  if (isButtonPressed(1) || getCurrentTimeInState() > MAX_TIME_IN_STAGE2_STATE / current_round){
+  updateStateTime();
+  if ((isButtonPressed(1) || isButtonPressed(0))|| getCurrentTimeInState() > MAX_TIME_IN_STAGE2_STATE){
     changeState(FINAL_STATE);          
   }
   current_round++;
