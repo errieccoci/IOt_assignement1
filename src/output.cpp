@@ -8,11 +8,11 @@ void initLcd() {
   lcd.init();
   lcd.backlight();
 }
-void resetLcd(const int x = 0, const int y = 0) {
+void resetLcd(const int x, const int y) {
     lcd.clear();
     lcd.setCursor(x, y);
 }
-void printLcd(const String msg_left, const String msg_right = "") {
+void printLcd(const String msg_left, const String msg_right) {
     lcd.setCursor(0,0);
     lcd.print(msg_left);
     lcd.setCursor(LCD_COL - msg_right.length(), 1);
@@ -46,7 +46,7 @@ void calcBlink(const bool p1, const bool p2) {
   // blink totale di 2 secondi
   const int del_tot = 2000; 
   const int del_it = 300;
-  const int it = del_tot / 2*del_it;
+  const int it = del_tot / (2*del_it);
 
   for (uint8_t i = 0; i < it; i++) {
     digitalWrite(pin_p1, HIGH);

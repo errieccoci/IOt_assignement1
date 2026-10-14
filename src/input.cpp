@@ -51,6 +51,7 @@ void initInput(){
   pinMode(PIN_POT, INPUT);
   playerScore[0] = 0;
   playerScore[1] = 0;
+  randomSeed(analogRead(0));
 }
 
 long readPotLevel() {

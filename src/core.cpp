@@ -4,12 +4,13 @@
 #include "input.h"
 #include "output.h"
 
-#define MAX_TIME_IN_INTRO_STATE 5000
+#define MAX_TIME_IN_INTRO_STATE 15000
 #define MAX_TIME_IN_STAGE2_STATE 10000
 #define MAX_TIME_WAIT_BUTTON 3000
 #define MAX_TIME_IN_STAGE1_STATE 3000
+#define MAX_TIME_IN_FINAL_STAGE 5000
 
-String welcome = "Welcome to the React! Game. Press Buttons to Start";
+String welcome = "Welcome to the React! React. Press Buttons to Start";
 int curr_random;
 uint8_t current_round = 1;
 /* core business logic */
@@ -22,26 +23,29 @@ void intro(){
   if (isJustEnteredInState()){
     Serial.println("Intro...");
   }
-  
-  int dt = getCurrentTimeInState();
-  if (dt > MAX_TIME_IN_INTRO_STATE){
-    changeState(STAGE1_STATE);
-  }
   initLcd();
   digitalWrite(LED_GREEN01, LOW);
   digitalWrite(LED_GREEN02, LOW);
   int c = 0;
   bool b = true;
-  while(!isButtonPressed(0) and !isButtonPressed(1)) {
+  while((!isButtonPressed(0) or !isButtonPressed(1)) and getCurrentTimeInState() < MAX_TIME_IN_INTRO_STATE) {
     // lampeggia i led rossi
     scroll(&c, &b, welcome);
+    updateStateTime();
     delay(300);
   }
   resetLcd();
-  changeState(STAGE1_STATE);
+  updateStateTime();
+  if (getCurrentTimeInState() >= MAX_TIME_IN_INTRO_STATE){
+    changeState(FINAL_STATE);
+  } else {
+    changeState(STAGE1_STATE);
+    resetInput();
+  }
 }
 
 void stage1(){
+  const int t_max = MAX_TIME_IN_STAGE1_STATE / (readPotLevel()*current_round);
   /*
   Cosa fa:
   1) Viene generato il numero casuale
@@ -72,11 +76,17 @@ void stage1(){
   }
   updateStateTime();
 
-  if(getCurrentTimeInState() > MAX_TIME_IN_STAGE1_STATE / (readPotLevel()*current_round)) {
-    changeState(FINAL_STATE);
+  while(!isButtonPressed(0) and !isButtonPressed(1) and 
+    getCurrentTimeInState() < t_max) {
+      updateStateTime();
   }
-  while(!isButtonPressed(0) or !isButtonPressed(1));
-  changeState(STAGE2_STATE);
+  updateStateTime();
+  Serial.println(getCurrentTimeInState() > t_max);
+  if (getCurrentTimeInState() >= t_max){
+    changeState(FINAL_STATE);
+  } else {
+    changeState(STAGE2_STATE);
+  }
 }
 
 void stage2(){
@@ -102,7 +112,9 @@ void stage2(){
   p = getLastButtonTime(0) > getLastButtonTime(1);
   if (getbuttonScore(p) == curr_random) {
     incPlayerScore(p);
-  } 
+  } else if (getbuttonScore(!p) == curr_random) {
+    incPlayerScore(!p);
+  }
 
   /*
   Per coloro che hanno sbagliato, viene segnalato
@@ -114,12 +126,14 @@ void stage2(){
     p_correct[i] = false;
   }
   }
-  printLcd("P1" + String(getbuttonScore(0)), 
-  "P2" + String(getbuttonScore(1)));
+
+  printLcd("P1 " + String(getbuttonScore(0)), 
+  "P2 " + String(getbuttonScore(1)));
   calcBlink(p_correct[0], p_correct[1]);
   /* change the state if button 1 is pressed or max time elapsed*/
   updateStateTime();
-  if ((isButtonPressed(1) || isButtonPressed(0))|| getCurrentTimeInState() > MAX_TIME_IN_STAGE2_STATE){
+
+  if (getCurrentTimeInState() > MAX_TIME_IN_STAGE2_STATE / (readPotLevel()*current_round)){
     changeState(FINAL_STATE);          
   }
   current_round++;
@@ -130,7 +144,6 @@ void stage2(){
 void finalize(){
   if (isJustEnteredInState()){
     String final_string;
-    int N_SEC_FINALM = 10;
     int c = 0;
     bool b = true;
     Serial.println("Finalize...");
@@ -140,7 +153,7 @@ void finalize(){
       final_string = "Game over - Player " + String(getbuttonScore(0) > getbuttonScore(1) ? "P1" : "P2") + " win.";
     }
     Serial.println(getCurrentTimeInState());
-    while(getCurrentTimeInState() < N_SEC_FINALM*100000) {
+    while(getCurrentTimeInState() < MAX_TIME_IN_FINAL_STAGE) {
       updateStateTime();
       scroll(&c, &b, final_string);
       delay(300);
