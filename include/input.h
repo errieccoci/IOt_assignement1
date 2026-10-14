@@ -1,11 +1,15 @@
 #ifndef __INPUT__
 #define __INPUT__
 
+#include <Arduino.h>
 #define LED_RED01 6
 #define LED_GREEN01 7
 #define LED_RED02 8
 #define LED_GREEN02 9
 #define NUM_BUTTONS 2
+#define PIN_POT A4
+
+long readPotLevel();
 void initInput();
 int getbuttonScore(int i);
 void resetInput();

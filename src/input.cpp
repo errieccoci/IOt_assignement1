@@ -48,10 +48,14 @@ void initInput(){
   for (int i = 0; i < NUM_LEDS; i++) {
     pinMode(ledPins[i], OUTPUT);
   }
+  pinMode(PIN_POT, INPUT);
   playerScore[0] = 0;
   playerScore[1] = 0;
 }
 
+long readPotLevel() {
+  return map(analogRead(PIN_POT), 0, 1024, 1, 4);
+}
 void signPlayerErrorScore(const int i) {
   playerScore[i]--;
 }

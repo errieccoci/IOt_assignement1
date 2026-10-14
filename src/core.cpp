@@ -72,7 +72,7 @@ void stage1(){
   }
   updateStateTime();
 
-  if(getCurrentTimeInState() > MAX_TIME_IN_STAGE1_STATE / current_round) {
+  if(getCurrentTimeInState() > MAX_TIME_IN_STAGE1_STATE / (readPotLevel()*current_round)) {
     changeState(FINAL_STATE);
   }
   while(!isButtonPressed(0) or !isButtonPressed(1));
