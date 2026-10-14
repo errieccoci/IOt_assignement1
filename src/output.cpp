@@ -41,20 +41,21 @@ void calcBlink(const bool p1, const bool p2) {
   si vorrà segnalare con un blink per ciascun player se
   esso ha fatto un errore oppure ha vinto il round.
   */
-  const bool pin_p1 = p1 ? LED_GREEN01 : LED_RED01;
-  const bool pin_p2 = p2 ? LED_GREEN02 : LED_RED02;
+  const int pin_p1 = p1 ? LED_GREEN01 : LED_RED01;
+  const int pin_p2 = p2 ? LED_GREEN02 : LED_RED02;
   // blink totale di 2 secondi
-  const int del_tot = 2000; 
+  int del_tot = 3000; 
   const int del_it = 300;
   const int it = del_tot / (2*del_it);
 
-  for (uint8_t i = 0; i < it; i++) {
+  while (del_tot > 0 ) {
     digitalWrite(pin_p1, HIGH);
     digitalWrite(pin_p2, HIGH);
     delay(del_it);
     digitalWrite(pin_p1, LOW);
     digitalWrite(pin_p2, LOW);
     delay(del_it);
+    del_tot -= del_it;
   }
 
 }

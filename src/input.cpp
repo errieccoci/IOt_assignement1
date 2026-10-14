@@ -4,7 +4,7 @@
 
 #include <EnableInterrupt.h>
 
-#define BOUNCING_TIME 100
+#define BOUNCING_TIME 50
 
 // #define __DEBUG__
 uint8_t inputPins[NUM_BUTTONS] = {BUT01_PIN, BUT02_PIN};
@@ -29,7 +29,7 @@ void buttonHandler(int i){
   if (ts - lastButtonPressedTimestamps[i] > BOUNCING_TIME){
     lastButtonPressedTimestamps[i] = ts;
     int status = digitalRead(inputPins[i]);
-    if (status == HIGH && !buttonPressed[i]) { 
+    if (status == HIGH ) { 
         buttonPressed[i] = true;
         buttonScore[i]++;
     }

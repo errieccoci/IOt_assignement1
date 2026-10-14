@@ -6,7 +6,7 @@
 
 #define MAX_TIME_IN_INTRO_STATE 15000
 #define MAX_TIME_IN_STAGE2_STATE 10000
-#define MAX_TIME_WAIT_BUTTON 3000
+#define MAX_TIME_WAIT_BUTTON 1000
 #define MAX_TIME_IN_STAGE1_STATE 3000
 #define MAX_TIME_IN_FINAL_STAGE 5000
 
@@ -24,6 +24,7 @@ void intro(){
     Serial.println("Intro...");
   }
   initLcd();
+  resetInput();
   digitalWrite(LED_GREEN01, LOW);
   digitalWrite(LED_GREEN02, LOW);
   int c = 0;
@@ -45,7 +46,7 @@ void intro(){
 }
 
 void stage1(){
-  const int t_max = MAX_TIME_IN_STAGE1_STATE / (readPotLevel()*current_round);
+  const int t_max = MAX_TIME_IN_STAGE1_STATE / (readPotLevel()*sqrt(current_round));
   /*
   Cosa fa:
   1) Viene generato il numero casuale
@@ -70,7 +71,7 @@ void stage1(){
   if (isJustEnteredInState()){
     Serial.println("Stage1...");
     resetInput();
-    curr_random = (int)random(0, 3);
+    curr_random = (int)random(1, 4);
     resetLcd();
     printLcd(curr_random);
   }
@@ -111,9 +112,12 @@ void stage2(){
   */
   p = getLastButtonTime(0) > getLastButtonTime(1);
   if (getbuttonScore(p) == curr_random) {
+    Serial.println("PLAYER " + String(p) +" vince round: "+ String(curr_random) +  " == " + String(getbuttonScore(p)));
     incPlayerScore(p);
   } else if (getbuttonScore(!p) == curr_random) {
     incPlayerScore(!p);
+    Serial.println("PLAYER " + String(!p) +" vince round: "+ String(curr_random) +  " == " + String(getbuttonScore(!p)));
+
   }
 
   /*
@@ -121,8 +125,9 @@ void stage2(){
   errore e decrementato lo score
   */
   for(uint8_t i = 0; i<NUM_BUTTONS; i++) {
-   if (isButtonPressed(i) != curr_random) {
+   if (getbuttonScore(i) != curr_random) {
     signPlayerErrorScore(i);
+    Serial.println("PLAYER " + String(i) +" dec: "+ String(curr_random) +  " != " + String(getbuttonScore(i)));
     p_correct[i] = false;
   }
   }
@@ -137,6 +142,7 @@ void stage2(){
     changeState(FINAL_STATE);          
   }
   current_round++;
+  resetInput();
   changeState(STAGE1_STATE);
 }
 
@@ -152,7 +158,6 @@ void finalize(){
     } else {
       final_string = "Game over - Player " + String(getbuttonScore(0) > getbuttonScore(1) ? "P1" : "P2") + " win.";
     }
-    Serial.println(getCurrentTimeInState());
     while(getCurrentTimeInState() < MAX_TIME_IN_FINAL_STAGE) {
       updateStateTime();
       scroll(&c, &b, final_string);
