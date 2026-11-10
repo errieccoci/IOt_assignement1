@@ -7,7 +7,6 @@
 
 #define BOUNCING_TIME 30
 #define FAID_PENALITY 2000
-// #define __DEBUG__
 
 uint8_t inputPins[NUM_BUTTONS] = {BUT01_PIN, BUT02_PIN};
 uint8_t greenLed[NUM_BUTTONS] = {GREEN1_PIN, GREEN2_PIN};
@@ -135,7 +134,7 @@ int getButtonScore(const int buttonIndex) {
  * @param show_lcd specify if showing the players score on the lcd
  * 
  */
-void modifyScore(const uint8_t p0, const uint8_t p1, const bool show_lcd) {
+void modifyScore(const int p0, const int p1, const bool show_lcd) {
   playerScore[0] += p0;
   playerScore[1] += p1;
   const long now = millis();

@@ -4,9 +4,9 @@
 #include <Arduino.h>
 #include "config.h"
 
-const uint8_t PENALITY = -1;
-const uint8_t NONE = 0;
-const uint8_t WIN = 1;
+const int PENALITY = -1;
+const int NONE = 0;
+const int WIN = 1;
 
 void initInput();
 void resetInput();
@@ -20,6 +20,6 @@ void disableButtonScoring();
 int getPlayerScore(const int p);
 long getLastButtonPressedTimestamp(const int buttonIndex);
 int getButtonScore(const int buttonIndex);
-void modifyScore(const uint8_t p1, const uint8_t p2, const bool show_lcd);
+void modifyScore(const int p0, const int p1, const bool show_lcd);
 int readPot();
 #endif
