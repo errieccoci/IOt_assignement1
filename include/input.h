@@ -20,6 +20,8 @@ void disableButtonScoring();
 int getPlayerScore(const int p);
 long getLastButtonPressedTimestamp(const int buttonIndex);
 int getButtonScore(const int buttonIndex);
-void modifyScore(const int p0, const int p1, const bool show_lcd);
+void modifyScore(const int p0, const int p1, const bool show_lcd, const bool faid = true);
 int readPot();
+void sleepMode();
+void disableSleepMode();
 #endif

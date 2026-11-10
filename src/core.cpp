@@ -3,7 +3,7 @@
 #include "kernel.h"
 #include "input.h"
 
-#define MAX_TIME_IN_INTRO_STATE 5000
+#define MAX_TIME_IN_INTRO_STATE 10000
 #define MAX_TIME_IN_STAGE2_STATE 10000
 #define MAX_WAIT_RANDOM 5000
 #define TIME_BYE_MESSAGE 10000
@@ -50,36 +50,39 @@ void intro(){
   float val =(sin(i) + 1.0) * 127.5;
 
   if (dt > MAX_TIME_IN_INTRO_STATE){
-    changeState(FINAL_STATE);
+    printLCD("Sleep Mode");
+    sleepMode();
+    disableSleepMode();
+    changeState(INTRO_STATE);
   }
   if (isButtonPressed(0) && isButtonPressed(1)){
     changeState(STAGE1_STATE);
   }
   level = map(readPot(), 10, 1000, 1, 4);
-  MAX_TIME_STAGE2_CALCULATED = MAX_TIME_IN_STAGE2_STATE * (num_round*level) / 10;
   printLedGreen(false, false);
   printLedRed(val*0.5, (255-val)*0.5);
   printLCD(WELCOME_MSG, startIndex, 
     startIndex + 
     (WELCOME_MSG.length() - LCD_COLUMNS > 0 ? LCD_COLUMNS : WELCOME_MSG.length()));
-  i += 0.40;
-  startIndex = (startIndex + 1) % WELCOME_MSG.length();
-  delay(200);
-}
-
-/**
- * @brief Choose, after random time between 0 and 5000 ms, a random
- * number to display. During this time, a "Go!" message
- * is displayed on the LCD and all the leds are off.
- * After choosing the number, it is displayed and passed at STAGE 2.
- * 
- */
+    i += 0.40;
+    startIndex = (startIndex + 1) % WELCOME_MSG.length();
+    delay(200);
+  }
+  
+  /**
+   * @brief Choose, after random time between 0 and 5000 ms, a random
+   * number to display. During this time, a "Go!" message
+   * is displayed on the LCD and all the leds are off.
+   * After choosing the number, it is displayed and passed at STAGE 2.
+   * 
+   */
 void stage1(){
   const float wait = getRandom(1000, MAX_WAIT_RANDOM);
   number = getRandom(1, 3);
   disableButtonScoring();
-
+    
   if (isJustEnteredInState()){
+    MAX_TIME_STAGE2_CALCULATED = MAX_TIME_IN_STAGE2_STATE * (num_round*level) / 10;
     Serial.println("Stage1... ");
     resetInput();
     printLCD(GO);
@@ -122,7 +125,8 @@ void stage2(){
   }
 
   if (getCurrentTimeInState() > MAX_TIME_STAGE2_CALCULATED){
-    changeState(FINAL_STATE);          
+    modifyScore(NONE, NONE, false, false);
+    changeState(FINAL_STATE);
   }
 
   /*
@@ -141,8 +145,8 @@ void stage2(){
   Serial.println("Player " + (String)faster + " first, " + (String)(!faster));
   Serial.println("B0: " + (String)getButtonScore(0) + " B1: " + String(getButtonScore(1)) + " number: " + String(number));
   int res[NUM_BUTTONS] = {NONE, NONE};
-  if (getButtonScore(0) != number) res[0] = PENALITY;
-  if (getButtonScore(1) != number) res[1] = PENALITY;
+  if (getButtonScore(0) > number) res[0] = PENALITY;
+  if (getButtonScore(1) > number) res[1] = PENALITY;
   res[0] = !faster && res[0] != PENALITY ? WIN : res[0];
   res[1] = faster && res[1] != PENALITY ? WIN : res[1];
 
@@ -170,8 +174,8 @@ void finalize(){
   while (getCurrentTimeInState() < TIME_BYE_MESSAGE)
   {
     printLCD(final_message, i, 
-      i + LCD_COLUMNS < final_message.length() ? 
-        i + LCD_COLUMNS : final_message.length() - 1);
+      i + LCD_COLUMNS < (signed int)final_message.length() ? 
+        i + LCD_COLUMNS : final_message.length());
     i++;
     delay(250);
   }

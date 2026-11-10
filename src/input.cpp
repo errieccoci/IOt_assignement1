@@ -1,7 +1,7 @@
 #include "input.h"
 #include "Arduino.h"
 #include "config.h"
-
+#include <avr/sleep.h>
 #include <EnableInterrupt.h>
 #include <LiquidCrystal_I2C.h>
 
@@ -134,7 +134,10 @@ int getButtonScore(const int buttonIndex) {
  * @param show_lcd specify if showing the players score on the lcd
  * 
  */
-void modifyScore(const int p0, const int p1, const bool show_lcd) {
+void modifyScore(const int p0, 
+                 const int p1, 
+                 const bool show_lcd, 
+                 const bool faid = true) {
   playerScore[0] += p0;
   playerScore[1] += p1;
   const long now = millis();
@@ -148,13 +151,24 @@ void modifyScore(const int p0, const int p1, const bool show_lcd) {
   }
   while (millis() - now < FAID_PENALITY)
   {
-    float val = (sin((i+=0.2)) + 1.0) *127.5*0.5;
+    float val = faid ? (sin((i+=0.2)) + 1.0) *127.5*0.5 : 255;
     printLedGreen(p0 == WIN ? val : 0, p1 == WIN ? val : 0);
-    printLedRed(p0 == PENALITY ? val: 0, p1 == PENALITY ? val : 0);
+    printLedRed(p0 == PENALITY || p0 == NONE ? val: 0, 
+                p1 == PENALITY || p1 == NONE ? val : 0);
     delay(10);
   }
 }
 
 int readPot() {
   return analogRead(POT_PIN);
+}
+
+void sleepMode() {
+  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+  sleep_enable();
+  sleep_mode();
+}
+
+void disableSleepMode() {
+  sleep_disable();
 }
