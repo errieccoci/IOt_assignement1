@@ -144,7 +144,8 @@ void stage2(){
   // if a button is pressed, now it will not affect the button score
   disableButtonScoring();
 
-  const int faster =(int)(getLastButtonPressedTimestamp(0) > getLastButtonPressedTimestamp(1));
+  int faster =(int)(getLastButtonPressedTimestamp(0) > getLastButtonPressedTimestamp(1));
+  faster = getLastButtonPressedTimestamp(faster) < getEnteredStateTime() ? !faster : faster;
   Serial.println("Player " + (String)faster + " first, " + (String)(!faster));
   Serial.println("B0: " + (String)getButtonScore(0) + " B1: " + String(getButtonScore(1)) + " number: " + String(number));
   int res[NUM_BUTTONS] = {NONE, NONE};
