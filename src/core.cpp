@@ -82,7 +82,7 @@ void stage1(){
   disableButtonScoring();
     
   if (isJustEnteredInState()){
-    MAX_TIME_STAGE2_CALCULATED = MAX_TIME_IN_STAGE2_STATE * (num_round*level) / 10;
+    MAX_TIME_STAGE2_CALCULATED = (int) MAX_TIME_IN_STAGE2_STATE*2 / (num_round * level);
     Serial.println("Stage1... ");
     resetInput();
     printLCD(GO);
@@ -101,9 +101,11 @@ void stage1(){
 
   for(int i = 0; i < NUM_BUTTONS; i++) {
     if (isButtonPressed(i)) {
+      Serial.println("Penality for " + String(i));
       modifyScore(
         i == 0 ? PENALITY : NONE,
         i == 1 ? PENALITY : NONE,
+        false,
         false
       );
       changeState(STAGE1_STATE);
@@ -127,6 +129,7 @@ void stage2(){
   if (getCurrentTimeInState() > MAX_TIME_STAGE2_CALCULATED){
     modifyScore(NONE, NONE, false, false);
     changeState(FINAL_STATE);
+    return;
   }
 
   /*
@@ -141,17 +144,17 @@ void stage2(){
   // if a button is pressed, now it will not affect the button score
   disableButtonScoring();
 
-  const int faster =(int)(getLastButtonPressedTimestamp(0) < getLastButtonPressedTimestamp(1));
+  const int faster =(int)(getLastButtonPressedTimestamp(0) > getLastButtonPressedTimestamp(1));
   Serial.println("Player " + (String)faster + " first, " + (String)(!faster));
   Serial.println("B0: " + (String)getButtonScore(0) + " B1: " + String(getButtonScore(1)) + " number: " + String(number));
   int res[NUM_BUTTONS] = {NONE, NONE};
   if (getButtonScore(0) > number) res[0] = PENALITY;
   if (getButtonScore(1) > number) res[1] = PENALITY;
-  res[0] = !faster && res[0] != PENALITY ? WIN : res[0];
-  res[1] = faster && res[1] != PENALITY ? WIN : res[1];
+  res[0] = faster == 0 && res[0] != PENALITY && getButtonScore(0) == number ? WIN : res[0];
+  res[1] = faster == 1 && res[1] != PENALITY && getButtonScore(1) == number ? WIN : res[1];
 
   Serial.println((String)res[0] +  (String)res[1]);
-  modifyScore(res[0], res[1], true);
+  modifyScore(res[0], res[1], true, true);
   changeState(STAGE1_STATE);
 }
 

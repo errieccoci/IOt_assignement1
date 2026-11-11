@@ -60,7 +60,7 @@ void initInput(){
   randomSeed(analogRead(A0));
 }
 
-void printLCD(const String msg, const int startIndex = 0, const int endIndex = LCD_COLUMNS) {
+void printLCD(const String msg, const int startIndex , const int endIndex) {
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print(msg.substring(startIndex, endIndex));
@@ -137,7 +137,7 @@ int getButtonScore(const int buttonIndex) {
 void modifyScore(const int p0, 
                  const int p1, 
                  const bool show_lcd, 
-                 const bool faid = true) {
+                 const bool faid) {
   playerScore[0] += p0;
   playerScore[1] += p1;
   const long now = millis();
@@ -157,6 +157,7 @@ void modifyScore(const int p0,
                 p1 == PENALITY || p1 == NONE ? val : 0);
     delay(10);
   }
+  if (!faid) printLedRed(0, 0);
 }
 
 int readPot() {
