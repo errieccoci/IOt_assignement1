@@ -101,7 +101,6 @@ void stage1(){
 
   for(int i = 0; i < NUM_BUTTONS; i++) {
     if (isButtonPressed(i)) {
-      Serial.println("Penality for " + String(i));
       modifyScore(
         i == 0 ? PENALITY : NONE,
         i == 1 ? PENALITY : NONE,
@@ -123,7 +122,7 @@ void stage1(){
 void stage2(){
 
   if (isJustEnteredInState()){
-    Serial.println("Stage2...max time stage2 = " + String(MAX_TIME_STAGE2_CALCULATED));
+    Serial.println("Stage2...");
   }
 
   if (getCurrentTimeInState() > MAX_TIME_STAGE2_CALCULATED){
@@ -145,15 +144,11 @@ void stage2(){
   disableButtonScoring();
 
   const int faster =(int)(getLastButtonPressedTimestamp(0) > getLastButtonPressedTimestamp(1));
-  Serial.println("Player " + (String)faster + " first, " + (String)(!faster));
-  Serial.println("B0: " + (String)getButtonScore(0) + " B1: " + String(getButtonScore(1)) + " number: " + String(number));
   int res[NUM_BUTTONS] = {NONE, NONE};
   if (getButtonScore(0) > number) res[0] = PENALITY;
   if (getButtonScore(1) > number) res[1] = PENALITY;
   res[0] = faster == 0 && res[0] != PENALITY && getButtonScore(0) == number ? WIN : res[0];
   res[1] = faster == 1 && res[1] != PENALITY && getButtonScore(1) == number ? WIN : res[1];
-
-  Serial.println((String)res[0] +  (String)res[1]);
   modifyScore(res[0], res[1], true, true);
   changeState(STAGE1_STATE);
 }
